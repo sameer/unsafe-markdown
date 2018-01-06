@@ -25,7 +25,7 @@ func TestHeader(t *testing.T) {
 		{"\r\n# h1\n\r", true},
 	}
 	for _, testStr := range testStrs {
-		if val := header.MatchString(testStr.string); val != testStr.expected {
+		if val := headerExp.MatchString(testStr.string); val != testStr.expected {
 			t.Error("For", testStr.string, "expected", testStr.expected, "got", val)
 			break
 		}
@@ -45,7 +45,7 @@ func TestHeader(t *testing.T) {
 		{"\r\n# h1\n\r", [][]string{{"# h1", "#", "h1"}}},
 	}
 	for _, testStr := range testStrs {
-		if val := header.FindAllStringSubmatch(testStr.string, -1); !strSliceEqual(val, testStr.expected.([][]string)) {
+		if val := headerExp.FindAllStringSubmatch(testStr.string, -1); !strSliceEqual(val, testStr.expected.([][]string)) {
 			t.Error("For", testStr.string, "expected", fmt.Sprintf("%q", testStr.expected), "got", fmt.Sprintf("%q", val))
 			break
 		}
@@ -63,7 +63,7 @@ func TestItalics(t *testing.T) {
 		{"\r\n** *italics* **\n\r", false},
 	}
 	for _, testStr := range testStrs {
-		if val := italics.MatchString(testStr.string); val != testStr.expected {
+		if val := italicsExp.MatchString(testStr.string); val != testStr.expected {
 			t.Error("For", testStr.string, "expected", fmt.Sprintf("%q", testStr.expected), "got", fmt.Sprintf("%q", val))
 			break
 		}
@@ -98,7 +98,7 @@ func TestBlockquote(t *testing.T) {
 		{"blah blah > sdfsdf", false},
 	}
 	for _, testStr := range testStrs {
-		if val := blockquote.MatchString(testStr.string); val != testStr.expected {
+		if val := blockquoteExp.MatchString(testStr.string); val != testStr.expected {
 			t.Error("For", testStr.string, "expected", fmt.Sprintf("%q", testStr.expected), "got", fmt.Sprintf("%q", val))
 			break
 		}
@@ -114,7 +114,7 @@ func TestLink(t *testing.T) {
 		{"![This](image) shows you one easy trick to make money fast! [Th!s](l!nk) does too!", true},
 	}
 	for _, testStr := range testStrs {
-		if val := link.MatchString(testStr.string); val != testStr.expected {
+		if val := linkExp.MatchString(testStr.string); val != testStr.expected {
 			t.Error("For", fmt.Sprintf("%q", testStr.string), "expected", fmt.Sprintf("%v", testStr.expected), "got", fmt.Sprintf("%v", val))
 			break
 		}
@@ -131,7 +131,7 @@ func TestImage(t *testing.T) {
 		{"[This](link) shows you one easy trick to make money fast!![Th!s](l!nk) does too!", true},
 	}
 	for _, testStr := range testStrs {
-		if val := img.MatchString(testStr.string); val != testStr.expected {
+		if val := imgExp.MatchString(testStr.string); val != testStr.expected {
 			t.Error("For", fmt.Sprintf("%q", testStr.string), "expected", fmt.Sprintf("%v", testStr.expected), "got", fmt.Sprintf("%v", val))
 			break
 		}
@@ -139,7 +139,7 @@ func TestImage(t *testing.T) {
 }
 
 func TestMarkdownToHtml(t *testing.T) {
-	fmt.Printf("Got %q\n", MarkdownToHtml("line1\nline2\n"))
+	fmt.Printf("Got %q\n", MarkdownToHtml("line1\n## h2\n"))
 }
 
 func strSliceEqual(a, b [][]string) bool {

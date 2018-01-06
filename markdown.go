@@ -2,6 +2,7 @@ package markdown
 
 import (
 	"regexp"
+	"strconv"
 )
 
 const (
@@ -12,35 +13,47 @@ var (
 	// All constructs are restricted to operating on a single line
 
 	// EOLs
-	br = regexp.MustCompile("(?:\\r\\n|\\n\\r|\\n|\\r|\\p{Zl}|\\p{Zp}|\\v|\\f)")
+	brExp = regexp.MustCompile("(?:\\r\\n|\\n\\r|\\n|\\r|\\p{Zl}|\\p{Zp}|\\v|\\f)")
 	// BOL, 1 to 6 #s, a space, some text, EOL.
-	header = regexp.MustCompile("(?m)^([#]{1,6})[ ]([^" + allEOLChars + "]+?)$")
+	headerExp = regexp.MustCompile("(?m)^([#]{1,6})[ ]([^" + allEOLChars + "]+?)$")
 	// BOL, optional text, 1 star, optional char that's not a star, required text, 1 star, optional char that's not a star, optional text, EOL. Requires >= 2 characters inside.
-	italics = regexp.MustCompile("(?m)^[^" + allEOLChars + "*]*?[*]([^*" + allEOLChars + "][^" + allEOLChars + "]*[^*" + allEOLChars + "])[*][^" + allEOLChars + "*]*?$")
+	italicsExp = regexp.MustCompile("(?m)^[^" + allEOLChars + "*]*?[*]([^*" + allEOLChars + "][^" + allEOLChars + "]*[^*" + allEOLChars + "])[*][^" + allEOLChars + "*]*?$")
 	// Duplicate of italics except with two stars.
-	bold = regexp.MustCompile("(?m)^[^" + allEOLChars + "*]*?[*]{2}([^*" + allEOLChars + "][^" + allEOLChars + "]*[^*" + allEOLChars + "])[*]{2}[^" + allEOLChars + "*]*?$")
+	boldExp = regexp.MustCompile("(?m)^[^" + allEOLChars + "*]*?[*]{2}([^*" + allEOLChars + "][^" + allEOLChars + "]*[^*" + allEOLChars + "])[*]{2}[^" + allEOLChars + "*]*?$")
 	// BOL, >, a space, optional text, EOL.
-	blockquote = regexp.MustCompile("(?m)^>[ ]([^" + allEOLChars + "]*?)$")
-	// Plug this into an online regexp explainer and you'll see why
-	link = regexp.MustCompile(`(?m)(?:^|^[^` + allEOLChars + `]*?[^!])\[([^` + allEOLChars + `]+?)\]\(([^` + allEOLChars + `]*?)\)[^` + allEOLChars + `]*?$`)
-	// Plug this into an online regexp explainer and you'll see why
-	img = regexp.MustCompile(`(?m)^[^` + allEOLChars + `]*?!\[([^` + allEOLChars + `]+?)\]\(([^` + allEOLChars + `]*?)\)[^` + allEOLChars + `]*?$`)
+	blockquoteExp = regexp.MustCompile("(?m)^>[ ]([^" + allEOLChars + "]*?)$")
+	// Plug this into an online regexp explainer and you'll see why, too complex
+	linkExp = regexp.MustCompile(`(?m)(?:^|^[^` + allEOLChars + `]*?[^!])\[([^` + allEOLChars + `]+?)\]\(([^` + allEOLChars + `]*?)\)[^` + allEOLChars + `]*?$`)
+	// Plug this into an online regexp explainer and you'll see why, too complex
+	imgExp = regexp.MustCompile(`(?m)^[^` + allEOLChars + `]*?!\[([^` + allEOLChars + `]+?)\]\(([^` + allEOLChars + `]*?)\)[^` + allEOLChars + `]*?$`)
 )
 
 func MarkdownToHtml(md string) string {
 	html := md
-	matched := 0
-	for {
 
-		if matched == 0 {
+	for {
+		actionCount := 0
+
+		html = replaceGeneric(html, headerExp, actionHeader, &actionCount)
+
+		html = replaceGeneric(actionGeneric(html, italicsExp, &actionCount))
+		html = replaceGeneric(actionGeneric(html, boldExp, &actionCount))
+		html = replaceGeneric(actionGeneric(html, blockquoteExp, &actionCount))
+
+		html = replaceGeneric(actionLinklike(html, linkExp, &actionCount))
+		html = replaceGeneric(actionLinklike(html, imgExp, &actionCount))
+
+		if actionCount == 0 {
 			break
 		}
 	}
-	html, _ = replaceGeneric(md, br, actionBr)
+	// This can only be done once because we maintain the newlines for readability,
+	// if it was in the loop it would infinitely replace.
+	html = replaceGeneric(html, brExp, actionBr, nil)
 	return html
 }
 
-func replaceGeneric(md string, exp *regexp.Regexp, action func(string, []int) string) (string, bool) {
+func replaceGeneric(md string, exp *regexp.Regexp, action func(string, []int) string, actionCount *int) string {
 	actionHappened := false
 	matches := exp.FindAllStringSubmatchIndex(md, -1)
 	reverse(matches)
@@ -48,7 +61,68 @@ func replaceGeneric(md string, exp *regexp.Regexp, action func(string, []int) st
 		md = action(md, match)
 		actionHappened = true
 	}
-	return md, actionHappened
+	if actionHappened && actionCount != nil {
+		*actionCount++
+	}
+	return md
+}
+
+func actionHeader(md string, match []int) string {
+	// Generic match 0 1, 1st group 2 3, 2nd group 4 5
+	hType := strconv.Itoa(match[3] - match[2])
+	openTag := "<h" + hType + ">"
+	closeTag := "</h" + hType + ">"
+	temp := openTag + md[match[4]:match[5]] + closeTag
+	if len(md) > match[1] {
+		md = md[:match[0]] + temp + md[match[1]:]
+	} else {
+		md = md[:match[0]] + temp
+	}
+	return md
+}
+
+func actionGeneric(html string, exp *regexp.Regexp, actionCount *int) (string, *regexp.Regexp, func(string, []int) string, *int) {
+	var openTag, closeTag string
+	if exp == italicsExp {
+		openTag, closeTag = "<i>", "</i>"
+	} else if exp == boldExp {
+		openTag, closeTag = "<b>", "</b>"
+	} else if exp == blockquoteExp {
+		openTag, closeTag = "<blockquote>", "</blockquote>"
+	} else {
+		panic("Unknown regex expression provided!")
+	}
+	return html, exp, func(md string, match []int) string {
+		// Generic match 0 1, 1st group 2 3
+		temp := openTag + md[match[2]:match[3]] + closeTag
+		if len(md) > match[1] {
+			md = md[:match[0]] + temp + md[match[1]:]
+		} else {
+			md = md[:match[0]] + temp
+		}
+		return md
+	}, actionCount
+}
+
+func actionLinklike(html string, exp *regexp.Regexp, actionCount *int) (string, *regexp.Regexp, func(string, []int) string, *int) {
+	var openTag, endLink, openDesc, endDesc, closeTag string
+	if exp == linkExp {
+		openTag, endLink, openDesc, endDesc, closeTag = "<a href='>", "'", ">", "", "</a>"
+	} else if exp == imgExp {
+		openTag, endLink, openDesc, endDesc, closeTag = "<img src='", "'", "alt='", "'", ">"
+	} else {
+		panic("Unknown regex expression provided!")
+	}
+	return html, exp, func(md string, match []int) string {
+		// Generic match 0 1, 1st group 2 3 desc, 2nd group 4 5 link
+		temp := openTag + md[match[4]:match[5]] + endLink + openDesc + md[match[2]:match[3]] + endDesc + closeTag
+		if len(md) > match[1] {
+			md = md[:match[0]] + temp + md[match[1]:]
+		} else {
+			md = md[:match[0]] + temp
+		}
+		return md
+	}, actionCount
 }
 
 func actionBr(md string, match []int) string {
