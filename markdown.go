@@ -3,7 +3,6 @@ package markdown
 import (
 	"regexp"
 	"strconv"
-	"fmt"
 )
 
 const (
@@ -96,11 +95,19 @@ func actionGeneric(html string, exp *regexp.Regexp, actionCount *int) (string, *
 	return html, exp, func(md string, match []int) string {
 		// Whole line match 0 1, 1st group 2 3
 		temp := openTag + md[match[2]:match[3]] + closeTag
-		if len(md) > match[3]+1 {
-			temp += md[match[3]+1:]
+		leftOffset, rightOffset := 1, 1
+		if exp == boldExp {
+			// two stars
+			leftOffset, rightOffset = 2, 2
+		} else if exp == blockquoteExp {
+			// blockquote shouldn't take on any functionality like this
+			leftOffset, rightOffset = 3, 3
 		}
-		if match[2]-1 > 0 {
-			temp = md[:match[2]-1] + temp
+		if len(md) > match[3]+leftOffset {
+			temp += md[match[3]+leftOffset:]
+		}
+		if match[2]-rightOffset > 0 {
+			temp = md[:match[2]-rightOffset] + temp
 		}
 		md = temp
 		return md
@@ -122,12 +129,12 @@ func actionLinklike(html string, exp *regexp.Regexp, actionCount *int) (string, 
 		if len(md) > match[5]+1 {
 			temp += md[match[5]+1:]
 		}
-		offset := 1
+		leftOffset := 1
 		if exp == imgExp { // Images have an exclamation mark
-			offset = 2
+			leftOffset = 2
 		}
-		if match[2]-offset > 0{
-			temp = md[:match[2]-offset] + temp
+		if match[2]-leftOffset > 0{
+			temp = md[:match[2]-leftOffset] + temp
 		}
 		md = temp
 		return md
