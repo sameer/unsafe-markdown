@@ -3,6 +3,8 @@ package markdown
 import (
 	"regexp"
 	"strconv"
+	"io"
+	"io/ioutil"
 )
 
 const (
@@ -34,7 +36,7 @@ var (
 	imgExp = regexp.MustCompile(`(?m)^[^` + allEOLChars + `]*?!\[([^` + allEOLChars + `]+?)\]\(([^` + allEOLChars + `]*?)\)[^` + allEOLChars + `]*?$`)
 )
 
-func MarkdownToHtml(md string) string {
+func MarkdownToHtmlString(md string) string {
 	html := md
 
 	for {
@@ -59,6 +61,20 @@ func MarkdownToHtml(md string) string {
 	// if it was in the loop it would infinitely replace.
 	html = replaceGeneric(html, brExp, actionBr, nil)
 	return html
+}
+
+func MarkdownToHtmlByte(md []byte) []byte {
+	// TODO: modify this so allocations can be reduced
+	return []byte(MarkdownToHtmlString(string(md)))
+}
+
+func MarkdownToHtmlIO(r io.Reader, w io.Writer) error {
+	html, err := ioutil.ReadAll(r)
+	if err != nil {
+		return err
+	}
+	w.Write(MarkdownToHtmlByte(html))
+	return nil
 }
 
 func replaceGeneric(md string, exp *regexp.Regexp, action func(string, []int) string, actionCount *int) string {
