@@ -1,0 +1,4 @@
+package markdown
+
+func nothing() {
+}
