@@ -3,6 +3,7 @@ package markdown
 import (
 	"regexp"
 	"strconv"
+	"fmt"
 )
 
 const (
@@ -93,13 +94,15 @@ func actionGeneric(html string, exp *regexp.Regexp, actionCount *int) (string, *
 		panic("Unknown regex expression provided!")
 	}
 	return html, exp, func(md string, match []int) string {
-		// Generic match 0 1, 1st group 2 3
+		// Whole line match 0 1, 1st group 2 3
 		temp := openTag + md[match[2]:match[3]] + closeTag
-		if len(md) > match[1] {
-			md = md[:match[0]] + temp + md[match[1]:]
-		} else {
-			md = md[:match[0]] + temp
+		if len(md) > match[3]+1 {
+			temp += md[match[3]+1:]
 		}
+		if match[2]-1 > 0 {
+			temp = md[:match[2]-1] + temp
+		}
+		md = temp
 		return md
 	}, actionCount
 }
@@ -107,20 +110,26 @@ func actionGeneric(html string, exp *regexp.Regexp, actionCount *int) (string, *
 func actionLinklike(html string, exp *regexp.Regexp, actionCount *int) (string, *regexp.Regexp, func(string, []int) string, *int) {
 	var openTag, endLink, openDesc, endDesc, closeTag string
 	if exp == linkExp {
-		openTag, endLink, openDesc, endDesc, closeTag = "<a href='>", "'", ">", "", "</a>"
+		openTag, endLink, openDesc, endDesc, closeTag = "<a href='", "'", ">", "", "</a>"
 	} else if exp == imgExp {
-		openTag, endLink, openDesc, endDesc, closeTag = "<img src='", "'", "alt='", "'", ">"
+		openTag, endLink, openDesc, endDesc, closeTag = "<img src='", "'", " alt='", "'", ">"
 	} else {
 		panic("Unknown regex expression provided!")
 	}
 	return html, exp, func(md string, match []int) string {
-		// Generic match 0 1, 1st group 2 3 desc, 2nd group 4 5 link
+		// Whole line match 0 1, 1st group 2 3 desc, 2nd group 4 5 link
 		temp := openTag + md[match[4]:match[5]] + endLink + openDesc + md[match[2]:match[3]] + endDesc + closeTag
-		if len(md) > match[1] {
-			md = md[:match[0]] + temp + md[match[1]:]
-		} else {
-			md = md[:match[0]] + temp
+		if len(md) > match[5]+1 {
+			temp += md[match[5]+1:]
 		}
+		offset := 1
+		if exp == imgExp { // Images have an exclamation mark
+			offset = 2
+		}
+		if match[2]-offset > 0{
+			temp = md[:match[2]-offset] + temp
+		}
+		md = temp
 		return md
 	}, actionCount
 }

@@ -139,7 +139,22 @@ func TestImage(t *testing.T) {
 }
 
 func TestMarkdownToHtml(t *testing.T) {
-	fmt.Printf("Got %q\n", MarkdownToHtml("line1\n## h2\n"))
+	testStrs := [...]testString{
+		{"# h1", "<h1>h1</h1>"},
+		{"# h1\n# h1", "<h1>h1</h1><br>\n<h1>h1</h1>"},
+		{"## h2", "<h2>h2</h2>"},
+		{"### h3", "<h3>h3</h3>"},
+		{"#### h4", "<h4>h4</h4>"},
+		{"You must put an *emphasis* on your work.", "You must put an <i>emphasis</i> on your work."},
+		{"You must put an *emphasis* on your work.", "You must put an <i>emphasis</i> on your work."},
+		{"[This](link) shows you one easy trick to make money fast!![Th!s](image!) does too!", "<a href='link'>This</a> shows you one easy trick to make money fast!<img src='image!' alt='Th!s'> does too!"},
+	}
+	for _, testStr := range testStrs {
+		if val := MarkdownToHtml(testStr.string); val != testStr.expected {
+			t.Error("For", testStr.string, "\nexpected", fmt.Sprintf("%q\n", testStr.expected), "got", fmt.Sprintf("%q\n", val))
+			break
+		}
+	}
 }
 
 func strSliceEqual(a, b [][]string) bool {
