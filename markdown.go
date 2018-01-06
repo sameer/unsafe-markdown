@@ -12,14 +12,20 @@ const (
 var (
 	// All constructs are restricted to operating on a single line
 
+	// I tried to explain some of it but I had to make too many changes, so the explanations might not match exactly.
+
 	// EOLs
 	brExp = regexp.MustCompile("(?:\\r\\n|\\n\\r|\\n|\\r|\\p{Zl}|\\p{Zp}|\\v|\\f)")
 	// BOL, 1 to 6 #s, a space, some text, EOL.
 	headerExp = regexp.MustCompile("(?m)^([#]{1,6})[ ]([^" + allEOLChars + "]+?)$")
 	// BOL, optional text, 1 star, optional char that's not a star, required text, 1 star, optional char that's not a star, optional text, EOL. Requires >= 2 characters inside.
-	italicsExp = regexp.MustCompile("(?m)^[^" + allEOLChars + "*]*?[*]([^*" + allEOLChars + "][^" + allEOLChars + "]*[^*" + allEOLChars + "])[*][^" + allEOLChars + "*]*?$")
+	italicsExp = regexp.MustCompile(`(?m)(?:^[^\r\n\v\f\p{Zl}\p{Zp}*]|^[^\r\n\v\f\p{Zl}\p{Zp}]*?[^*])[*]{1}([^\r\n\v\f\p{Zl}\p{Zp}*]+?)[*]{1}(?:$|[^\r\n\v\f\p{Zl}\p{Zp}*]$|[^*][^\r\n\v\f\p{Zl}\p{Zp}]*?$)`)
+	// Duplicate of italics except with backticks.
+	codeExp = regexp.MustCompile("(?m)(?:^[^\\r\\n\\v\\f\\p{Zl}\\p{Zp}`]|^[^\\r\\n\\v\\f\\p{Zl}\\p{Zp}]*?[^`])[`]{1}([^\\r\\n\\v\\f\\p{Zl}\\p{Zp}`]+?)[`]{1}(?:$|[^\\r\\n\\v\\f\\p{Zl}\\p{Zp}`]$|[^`][^\\r\\n\\v\\f\\p{Zl}\\p{Zp}]*?$)")
 	// Duplicate of italics except with two stars.
-	boldExp = regexp.MustCompile("(?m)^[^" + allEOLChars + "*]*?[*]{2}([^*" + allEOLChars + "][^" + allEOLChars + "]*[^*" + allEOLChars + "])[*]{2}[^" + allEOLChars + "*]*?$")
+	boldExp = regexp.MustCompile(`(?m)(?:^[^\r\n\v\f\p{Zl}\p{Zp}*]|^[^\r\n\v\f\p{Zl}\p{Zp}]*?[^*])[*]{2}([^\r\n\v\f\p{Zl}\p{Zp}*]+?)[*]{2}(?:$|[^\r\n\v\f\p{Zl}\p{Zp}*]$|[^*][^\r\n\v\f\p{Zl}\p{Zp}]*?$)`)
+	// Duplicate of italics except with two tildes.
+	strikethroughExp = regexp.MustCompile(`(?m)(?:^[^\r\n\v\f\p{Zl}\p{Zp}~]|^[^\r\n\v\f\p{Zl}\p{Zp}]*?[^~])[~]{2}([^\r\n\v\f\p{Zl}\p{Zp}~]+?)[~]{2}(?:$|[^\r\n\v\f\p{Zl}\p{Zp}~]$|[^~][^\r\n\v\f\p{Zl}\p{Zp}]*?$)`)
 	// BOL, >, a space, optional text, EOL.
 	blockquoteExp = regexp.MustCompile("(?m)^>[ ]([^" + allEOLChars + "]*?)$")
 	// Plug this into an online regexp explainer and you'll see why, too complex
@@ -39,6 +45,8 @@ func MarkdownToHtml(md string) string {
 		html = replaceGeneric(actionGeneric(html, italicsExp, &actionCount))
 		html = replaceGeneric(actionGeneric(html, boldExp, &actionCount))
 		html = replaceGeneric(actionGeneric(html, blockquoteExp, &actionCount))
+		html = replaceGeneric(actionGeneric(html, codeExp, &actionCount))
+		html = replaceGeneric(actionGeneric(html, strikethroughExp, &actionCount))
 
 		html = replaceGeneric(actionLinklike(html, linkExp, &actionCount))
 		html = replaceGeneric(actionLinklike(html, imgExp, &actionCount))
@@ -89,6 +97,10 @@ func actionGeneric(html string, exp *regexp.Regexp, actionCount *int) (string, *
 		openTag, closeTag = "<b>", "</b>"
 	} else if exp == blockquoteExp {
 		openTag, closeTag = "<blockquote>", "</blockquote>"
+	} else if exp == codeExp {
+		openTag, closeTag = "<code>", "</code>"
+	} else if exp == strikethroughExp {
+		openTag, closeTag = "<s>", "</s>"
 	} else {
 		panic("Unknown regex expression provided!")
 	}
@@ -133,7 +145,7 @@ func actionLinklike(html string, exp *regexp.Regexp, actionCount *int) (string, 
 		if exp == imgExp { // Images have an exclamation mark
 			leftOffset = 2
 		}
-		if match[2]-leftOffset > 0{
+		if match[2]-leftOffset > 0 {
 			temp = md[:match[2]-leftOffset] + temp
 		}
 		md = temp

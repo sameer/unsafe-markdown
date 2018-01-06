@@ -54,13 +54,13 @@ func TestHeader(t *testing.T) {
 
 func TestItalics(t *testing.T) {
 	testStrs := []testString{
-		{"*italics*", true},
+		{" *italics*", true},
 		{"bblahblahblahblah*italics      yo!*blah", true},
-		{"** italics **", false},
-		{"\n* **italics** *\n", true},
-		{"\r\n*italics*\n\r", true},
-		{"\r\n*italics\n*\r", false},
-		{"\r\n** *italics* **\n\r", false},
+		{" ** italics **", false},
+		{"\n * **italics** *\n", false},
+		{"\r\n *italics*\n\r", true},
+		{"\r\n *italics\n*\r", false},
+		{"\r\n** *italics* **\n\r", true},
 	}
 	for _, testStr := range testStrs {
 		if val := italicsExp.MatchString(testStr.string); val != testStr.expected {
@@ -148,7 +148,7 @@ func TestMarkdownToHtml(t *testing.T) {
 		{"You must put an *emphasis* on your work.", "You must put an <i>emphasis</i> on your work."},
 		{"You must be **bold** in the face of danger.", "You must be <b>bold</b> in the face of danger."},
 		{"You must be **bold** in the face of danger, *yet* know when to run and hide.", "You must be <b>bold</b> in the face of danger, <i>yet</i> know when to run and hide."},
-		{"[This](link) shows you one easy trick to make money fast!![Th!s](image!) does too!", "<a href='link'>This</a> shows you one easy trick to make money fast!<img src='image!' alt='Th!s'> does too!"},
+		{"[This](link) shows you one easy trick to make money *fast*!![Th!s](image!) does too!", "<a href='link'>This</a> shows you one easy trick to make money <i>fast</i>!<img src='image!' alt='Th!s'> does too!"},
 	}
 	for _, testStr := range testStrs {
 		if val := MarkdownToHtml(testStr.string); val != testStr.expected {
