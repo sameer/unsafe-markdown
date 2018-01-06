@@ -115,7 +115,7 @@ func TestLink(t *testing.T) {
 	}
 	for _, testStr := range testStrs {
 		if val := link.MatchString(testStr.string); val != testStr.expected {
-			t.Error("For", fmt.Sprintf("%q",testStr.string), "expected", fmt.Sprintf("%v", testStr.expected), "got", fmt.Sprintf("%v", val))
+			t.Error("For", fmt.Sprintf("%q", testStr.string), "expected", fmt.Sprintf("%v", testStr.expected), "got", fmt.Sprintf("%v", val))
 			break
 		}
 	}
@@ -132,7 +132,7 @@ func TestImage(t *testing.T) {
 	}
 	for _, testStr := range testStrs {
 		if val := img.MatchString(testStr.string); val != testStr.expected {
-			t.Error("For", fmt.Sprintf("%q",testStr.string), "expected", fmt.Sprintf("%v", testStr.expected), "got", fmt.Sprintf("%v", val))
+			t.Error("For", fmt.Sprintf("%q", testStr.string), "expected", fmt.Sprintf("%v", testStr.expected), "got", fmt.Sprintf("%v", val))
 			break
 		}
 	}
