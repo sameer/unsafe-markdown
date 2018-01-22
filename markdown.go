@@ -1,10 +1,10 @@
 package markdown
 
 import (
-	"regexp"
-	"strconv"
 	"io"
 	"io/ioutil"
+	"regexp"
+	"strconv"
 )
 
 const (

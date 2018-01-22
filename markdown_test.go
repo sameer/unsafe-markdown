@@ -1,8 +1,8 @@
 package markdown
 
 import (
-	"testing"
 	"fmt"
+	"testing"
 )
 
 type testString struct {
@@ -170,11 +170,11 @@ func strSliceEqual(a, b [][]string) bool {
 	if len(a) != len(b) {
 		return false
 	}
-	for i, _ := range a {
+	for i := range a {
 		if len(a[i]) != len(b[i]) {
 			return false
 		}
-		for j, _ := range a[i] {
+		for j := range a[i] {
 			if a[i][j] != b[i][j] {
 				return false
 			}
