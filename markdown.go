@@ -36,6 +36,7 @@ var (
 	imgExp = regexp.MustCompile(`(?m)^[^` + allEOLChars + `]*?!\[([^` + allEOLChars + `]+?)\]\(([^` + allEOLChars + `]*?)\)[^` + allEOLChars + `]*?$`)
 )
 
+// Convert a string of pre-escaped Markdown text into an HTML string.
 func MarkdownToHtmlString(md string) string {
 	html := md
 
@@ -63,11 +64,13 @@ func MarkdownToHtmlString(md string) string {
 	return html
 }
 
+// Convert a byte array of pre-escaped Markdown text into an HTML string.
 func MarkdownToHtmlByte(md []byte) []byte {
 	// TODO: modify this so allocations can be reduced
 	return []byte(MarkdownToHtmlString(string(md)))
 }
 
+// Convert Markdown text from an io.Reader and write it to an io.Writer.
 func MarkdownToHtmlIO(r io.Reader, w io.Writer) error {
 	html, err := ioutil.ReadAll(r)
 	if err != nil {

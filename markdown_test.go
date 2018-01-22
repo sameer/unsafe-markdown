@@ -64,7 +64,7 @@ func TestItalics(t *testing.T) {
 	}
 	for _, testStr := range testStrs {
 		if val := italicsExp.MatchString(testStr.string); val != testStr.expected {
-			t.Error("For", testStr.string, "expected", fmt.Sprintf("%q", testStr.expected), "got", fmt.Sprintf("%q", val))
+			t.Error("For", testStr.string, "expected", fmt.Sprintf("%v", testStr.expected), "got", fmt.Sprintf("%v", val))
 			break
 		}
 	}
@@ -99,7 +99,7 @@ func TestBlockquote(t *testing.T) {
 	}
 	for _, testStr := range testStrs {
 		if val := blockquoteExp.MatchString(testStr.string); val != testStr.expected {
-			t.Error("For", testStr.string, "expected", fmt.Sprintf("%q", testStr.expected), "got", fmt.Sprintf("%q", val))
+			t.Error("For", testStr.string, "expected", fmt.Sprintf("%v", testStr.expected), "got", fmt.Sprintf("%v", val))
 			break
 		}
 	}

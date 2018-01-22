@@ -3,6 +3,8 @@ A Regexp-based Markdown to Html Converter that expects input text to have alread
 
 Ideal for use in simple conversions where the output can be verified / is not critical.
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/sameer/unsafe-markdown)](https://goreportcard.com/report/github.com/sameer/unsafe-markdown)
+
 ### Supported Markdown Syntax:
 * Bolding
 * Italics
