@@ -141,7 +141,7 @@ func TestImage(t *testing.T) {
 func TestMarkdownToHtml(t *testing.T) {
 	testStrs := [...]testString{
 		{"# h1", "<h1>h1</h1>"},
-		{"# h1\n# h1", "<h1>h1</h1><br>\n<h1>h1</h1>"},
+		{"# h1\n\n# h1", "<h1>h1</h1>\n<br>\n<h1>h1</h1>"},
 		{"## h2", "<h2>h2</h2>"},
 		{"### h3", "<h3>h3</h3>"},
 		{"#### h4", "<h4>h4</h4>"},
@@ -151,7 +151,7 @@ func TestMarkdownToHtml(t *testing.T) {
 		{"[This](link) shows you one easy trick to make money *fast*!![Th!s](image!) does too!", "<a href='link'>This</a> shows you one easy trick to make money <i>fast</i>!<img src='image!' alt='Th!s'> does too!"},
 	}
 	for _, testStr := range testStrs {
-		if val := MarkdownToHtml(testStr.string); val != testStr.expected {
+		if val := MarkdownToHtmlString(testStr.string); val != testStr.expected {
 			t.Error("For", testStr.string, "\nexpected", fmt.Sprintf("%q\n", testStr.expected), "got", fmt.Sprintf("%q\n", val))
 			break
 		}

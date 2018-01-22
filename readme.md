@@ -5,6 +5,8 @@ Ideal for use in simple conversions where the output can be verified / is not cr
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/sameer/unsafe-markdown)](https://goreportcard.com/report/github.com/sameer/unsafe-markdown)
 
+**Code Coverage: 88.6%**
+
 ### Supported Markdown Syntax:
 * Bolding
 * Italics
