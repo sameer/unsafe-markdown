@@ -95,6 +95,7 @@ func TestBlockquote(t *testing.T) {
 		{"> woot", true},
 		{">", false},
 		{"> ", true},
+		{"> This is the most important quote you will ever read. Mark my words, this is the real truth man.", true},
 		{"blah blah > sdfsdf", false},
 	}
 	for _, testStr := range testStrs {
@@ -149,6 +150,8 @@ func TestMarkdownToHtml(t *testing.T) {
 		{"You must be **bold** in the face of danger.", "You must be <b>bold</b> in the face of danger."},
 		{"You must be **bold** in the face of danger, *yet* know when to run and hide.", "You must be <b>bold</b> in the face of danger, <i>yet</i> know when to run and hide."},
 		{"[This](link) shows you one easy trick to make money *fast*!![Th!s](image!) does too!", "<a href='link'>This</a> shows you one easy trick to make money <i>fast</i>!<img src='image!' alt='Th!s'> does too!"},
+		{"> Garbage in, garbage out!", "<blockquote>Garbage in, garbage out!</blockquote>"},
+		{"\n\n", "<br>\n<br>\n<br>"},
 	}
 	for _, testStr := range testStrs {
 		if val := MarkdownToHtmlString(testStr.string); val != testStr.expected {

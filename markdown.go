@@ -17,7 +17,8 @@ var (
 	// I tried to explain some of it but I had to make too many changes, so the explanations might not match exactly.
 
 	// EOLs
-	brExp = regexp.MustCompile("(?m)^(?:\\r\\n|\\n\\r|\\n|\\r|\\p{Zl}|\\p{Zp}|\\v|\\f)")
+//	brExp = regexp.MustCompile("(?m)^(?:\\r\\n|\\n\\r|\\n|\\r|\\p{Zl}|\\p{Zp}|\\v|\\f)$")
+    brExp = regexp.MustCompile("(?m)^$")
 	// BOL, 1 to 6 #s, a space, some text, EOL.
 	headerExp = regexp.MustCompile("(?m)^([#]{1,6})[ ]([^" + allEOLChars + "]+?)$")
 	// BOL, optional text, 1 star, optional char that's not a star, required text, 1 star, optional char that's not a star, optional text, EOL. Requires >= 2 characters inside.
