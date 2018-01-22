@@ -29,7 +29,7 @@ var (
 	// Duplicate of italics except with two tildes.
 	strikethroughExp = regexp.MustCompile(`(?m)(?:^[^\r\n\v\f\p{Zl}\p{Zp}~]|^[^\r\n\v\f\p{Zl}\p{Zp}]*?[^~])[~]{2}([^\r\n\v\f\p{Zl}\p{Zp}~]+?)[~]{2}(?:$|[^\r\n\v\f\p{Zl}\p{Zp}~]$|[^~][^\r\n\v\f\p{Zl}\p{Zp}]*?$)`)
 	// BOL, >, a space, optional text, EOL.
-	blockquoteExp = regexp.MustCompile("(?m)^>[ ]([^" + allEOLChars + "]*?)$")
+	blockquoteExp = regexp.MustCompile("(?m)(?:^>)[ ]([^" + allEOLChars + "]*?)$")
 	// Plug this into an online regexp explainer and you'll see why, too complex
 	linkExp = regexp.MustCompile(`(?m)(?:^|^[^` + allEOLChars + `]*?[^!])\[([^` + allEOLChars + `]+?)\]\(([^` + allEOLChars + `]*?)\)[^` + allEOLChars + `]*?$`)
 	// Plug this into an online regexp explainer and you'll see why, too complex
@@ -129,13 +129,13 @@ func actionGeneric(html string, exp *regexp.Regexp, actionCount *int) (string, *
 			leftOffset, rightOffset = 2, 2
 		} else if exp == blockquoteExp {
 			// blockquote shouldn't take on any functionality like this
-			leftOffset, rightOffset = 3, 0
+			leftOffset, rightOffset = 1, 0
 		}
-		if len(md) > match[3]+leftOffset {
-			temp += md[match[3]+leftOffset:]
+		if len(md) > match[3]+rightOffset {
+			temp += md[match[3]+rightOffset:]
 		}
-		if match[2]-rightOffset > 0 {
-			temp = md[:match[2]-rightOffset] + temp
+		if match[2]-leftOffset > 0 {
+			temp = md[:match[2]-leftOffset] + temp
 		}
 		md = temp
 		return md
