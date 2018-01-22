@@ -129,7 +129,7 @@ func actionGeneric(html string, exp *regexp.Regexp, actionCount *int) (string, *
 			leftOffset, rightOffset = 2, 2
 		} else if exp == blockquoteExp {
 			// blockquote shouldn't take on any functionality like this
-			leftOffset, rightOffset = 1, 0
+			leftOffset, rightOffset = 2, 0
 		}
 		if len(md) > match[3]+rightOffset {
 			temp += md[match[3]+rightOffset:]
